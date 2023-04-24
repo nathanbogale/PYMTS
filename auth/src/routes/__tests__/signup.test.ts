@@ -12,4 +12,18 @@ it('should return 422 if the email is not valid', async() =>{
   .post('/api/auth/signup')
   .send({something:"something"})
   .expect(422);
+
+  await await request(app)
+  .post('/api/auth/signup')
+  .send({email: 'Invalid Email'})
+  .expect(422);
+
+  /*
+  await await request(app)
+  .post('/api/auth/signup')
+  .send({email: '@test.com'}) //uses the body validator, and the isEmail on the signup page 
+  .expect(422);
+  */
+
 });
+
