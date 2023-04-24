@@ -6,4 +6,4 @@ app.get('*', (req, res) => {
   res.send({});
 });
 
-export {app}
+export default app;
