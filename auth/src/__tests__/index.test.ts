@@ -6,4 +6,3 @@ it('Reponds with a satatus of 200', () => {
   .get('/')
   .expect(200)
 });
-
