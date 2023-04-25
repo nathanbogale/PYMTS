@@ -17,8 +17,7 @@ signUpRouter.post(
       .trim()
       .escape()
       .isLength({ min: 8, max: 32 })
-      .withMessage('Password must be between 8 and 32 characters')
-      .escape(),
+      .withMessage('Password must be between 8 and 32 characters'),
     body('password')
       .matches(/^(.*[a-z].*)$/)
       .withMessage('Password must contain atleast one lowwer case letter'),
@@ -28,6 +27,7 @@ signUpRouter.post(
     body('password')
       .matches(/^(.*\d.*)$/)
       .withMessage('Password must contain atleast one number case letter'),
+      body('password').escape(),
   ],
   (req: Request, res: Response) => {
     const errors = validationResult(req); // validates if the email has erros
