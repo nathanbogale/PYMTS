@@ -8,23 +8,23 @@ const signUpRouter = express.Router();
 
 signUpRouter.post(
   SIGNUP_ROUTE,
-  [body('email').isEmail().withMessage('Email must be ina valid format')],
   [
+    body('email')
+      .isEmail()
+      .withMessage('Email must be ina valid format')
+      .normalizeEmail(),
     body('password')
+      .trim()
+      .escape()
       .isLength({ min: 8, max: 32 })
-      .withMessage('Password must be between 8 and 32 characters'),
-  ],
-  [
+      .withMessage('Password must be between 8 and 32 characters')
+      .escape(),
     body('password')
       .matches(/^(.*[a-z].*)$/)
       .withMessage('Password must contain atleast one lowwer case letter'),
-  ],
-  [
     body('password')
       .matches(/^(.*[A-Z].*)$/)
       .withMessage('Password must contain atleast one upper case letter'),
-  ],
-  [
     body('password')
       .matches(/^(.*\d.*)$/)
       .withMessage('Password must contain atleast one number case letter'),
@@ -36,7 +36,15 @@ signUpRouter.post(
       res.status(422).send({});
     }
 
-    res.send({});
+    if (/.+@[A-Z]/g.test(req.body.email)) {
+      res.sendStatus(422);
+    }
+
+    if (/[><'"/]/g.test(req.body.password)) {
+      res.sendStatus(422);
+    }
+
+    res.send({ email: req.body.email });
   }
 );
 
