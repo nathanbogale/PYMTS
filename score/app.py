@@ -13,20 +13,20 @@ option=st.sidebar.selectbox("Choose what you want to do:",l)
 
 def page_1():
     #Intro Tab::
-    image = Image.open('test.png')
+    image = Image.open('logo_main.png')
 
     #Displaying the image:
     st.image(image,use_column_width="always")
 
     #Headers:
-    st.title("Welcome to this Mock Credit Risk Simulator")
-    st.header("Here's the drill. You get me whatever I need and I predict whether you are eligible or not. DEAL!")
-    st.subheader("Let's get started...")
+    st.title("Akafay: Credit Risk Simulator")
+    st.subheader("The credit risk simulator takes in your information and identifies if you are eligible for a credit or not.")
+    st.text("Head over to the next page to get started.")
 
 def page_2():
     data={}
     #Details Tab:
-    st.header("Gimme your details and I will deliver magic!")
+    st.subheader("Please provide the following information.")
 
     #Full Name:
     first,last=st.columns(2)
@@ -37,7 +37,7 @@ def page_2():
 
     name=first+" "+last
     data["Full Name"]=name
-81250065
+
     ##Age:
     age=st.slider("Enter your Age:",10,70)
     data["Age"]=age
