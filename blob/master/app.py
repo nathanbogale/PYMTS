@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from PIL import Image
-import sklearn
+##import sklearn
 import joblib
 import json
 
