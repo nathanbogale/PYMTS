@@ -1,3 +1,8 @@
+# Installation
+import pip
+pip.main(['install', 'sklearn'])
+pip.main(['install', 'joblib'])
+
 import streamlit as st
 import numpy as np
 import pandas as pd
