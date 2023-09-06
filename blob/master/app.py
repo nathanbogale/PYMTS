@@ -9,7 +9,7 @@ import json
 #Side Tab:
 l=["Introduction","Predict your Credit Score"]
 st.sidebar.subheader("Here's what you can do:")
-option=st.sidebar.selectbox("Choose what you want to do:",l)
+option=st.sidebar.selectbox("Menu:",l)
 
 def page_1():
     #Intro Tab::
