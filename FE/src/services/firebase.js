@@ -10,15 +10,13 @@ import {
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyCZEU2dBIYxLFu49EMD5O4cQ7O15yT5p-g",
-    authDomain: "akafay-credit-project-one.firebaseapp.com",
-    projectId: "akafay-credit-project-one",
-    storageBucket: "akafay-credit-project-one.appspot.com",
-    messagingSenderId: "491164667473",
-    appId: "1:491164667473:web:03eca095cd32096e5db270",
-    measurementId: "G-JH00L7STBJ"
+    apiKey: 'AIzaSyBwT87WPnrKOQ1wfMK6AGZi0GTR4SDvfZI',
+    authDomain: 'financial-hackathon.firebaseapp.com',
+    projectId: 'financial-hackathon',
+    storageBucket: 'financial-hackathon.appspot.com',
+    messagingSenderId: '803618097304',
+    appId: '1:803618097304:web:66b8bba1f2956671e468ed',
 };
 
 // Initialize Firebase
