@@ -1,0 +1,8 @@
+docker rmi -f akafay-api
+docker build -t akafay-api .
+docker run -p 5000:5000 akafay-api
+
+docker login
+docker tag akafay-api nathanbogale/akafay
+docker push nathanbogale/akafay
+docker build -t akafay-api .

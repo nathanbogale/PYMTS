@@ -1,122 +1,165 @@
-import streamlit as st
-import numpy as np
+from flask import Flask, request, jsonify
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 import pandas as pd
-from PIL import Image
-import sklearn
-import joblib
-import json
+import numpy as np
 
-#Side Tab:
-l=["Introduction","Predict your Credit Score"]
-st.sidebar.subheader("Here's what you can do:")
-option=st.sidebar.selectbox("Choose what you want to do:",l)
+app = Flask(__name__)
+#app = Flask("<link>akafay</link>")
 
-def page_1():
-    #Intro Tab::
-    image = Image.open('logo_main.png')
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.get_json(force=True)
 
-    #Displaying the image:
-    st.image(image,use_column_width="always")
+    # Load the data
+    df = pd.read_csv('credit_risk_dataset.csv')
 
-    #Headers:
-    st.title("Akafay: Credit Risk Simulator")
-    st.subheader("The credit risk simulator takes in your information and identifies if you are eligible for a credit or not.")
-    st.text("Head over to the next page to get started.")
+    # Preprocess the data
+    df = df.drop(columns=['cb_person_default_on_file', 'cb_person_cred_hist_length', 'cb_person_cred_hist_average_value'])
+    df = pd.get_dummies(df, drop_first=True)
+    X = df.drop(columns=['loan_status'])
+    y = df['loan_status']
 
-def page_2():
-    data={}
-    #Details Tab:
-    st.subheader("Please provide the following information.")
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    #Full Name:
-    first,last=st.columns(2)
-    first=first.text_input("Enter your First Name:")
-    last=last.text_input("Enter your Last Name:")
-    data["First Name"]=first
-    data["Last Name"]=last
+    # Scale the data
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
-    name=first+" "+last
-    data["Full Name"]=name
+    # Impute missing values
+    imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+    X_train_imputed = imputer.fit_transform(X_train_scaled)
+    X_test_imputed = imputer.transform(X_test_scaled)
 
-    ##Age:
-    age=st.slider("Enter your Age:",10,70)
-    data["Age"]=age
+    # Train a histogram gradient boosting classifier on the training data
+    clf = HistGradientBoostingClassifier()
+    clf.fit(X_train_imputed, y_train)
 
-    ##Annual Income:
-    ai=st.number_input("Enter your Annual Income:",1000,100000)
-    data["Annual Income"]=ai
+    # Predict
+    y_pred = clf.predict(np.array(data['X_test_imputed']).reshape(1, -1))
 
-    ##Home Ownership:
-    ho=st.selectbox("What is the type of House Ownership:", ["RENT", "OWN", "MORTGAGE","OTHER"])
-    data["Home Ownership"]=ho
+    # Calculate the credit score using the FICO method
+    # ... your FICO score calculation ...
+    # Calculate the custom credit score
+    fico_score = 0  # Initialize the score
 
-    ##Employment Length:
-    el=st.number_input("Enter your Work Experience in years:",2,50)
-    data["Employment Length"]=el
+    # Add or subtract from the score based on the input data
+    # ... your custom credit score calculation ...
+    if data['family_size'] <= 3:
+        fico_score += 10
+    elif data['family_size'] > 3 and data['family_size'] <= 5:
+        fico_score += 5
+    else:
+        fico_score += 0
 
-    ##Loan Intent:
-    li=st.selectbox("Why do you want a loan?", ['EDUCATION', 'MEDICAL', 'VENTURE', 'PERSONAL', 'DEBTCONSOLIDATION',
-                                                'HOMEIMPROVEMENT'])
-    data["Loan Intent"]=li
+    if data['residential_area'] == 'URBAN':
+        fico_score += 5
+    elif data['residential_area'] == 'RURAL':
+        fico_score -= 5
 
-    ##Loan Grade:
-    lg=st.selectbox("Grade of Loan expected?", ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
-    data["Loan Grade"]=lg
-
-    #Loan Amount:
-    la=st.number_input("Enter the loan amount:",100,50000)
-    data["Loan Amount"]=la
-
-    #loan_percent_income:
-    lpi=st.number_input("Enter your % Income to be used for repaying:",0,100)
-    data["Loan Percent Income"]=lpi
-
-    #cb_person_default_on_file:
-    def_his=st.selectbox("Have your ever defaulted?",["Y","N"]) 
-    data["Previous Defaults"]=def_his
-
-    #cb_person_cred_hist_length:
-    n_def=st.slider("Total Number of Defaults:",0,50)
-    data["Number of Defaults"]=n_def
-
-    #Make a submit button:
-    data_display=json.dumps(data)
-    temp=pd.DataFrame(data,index=[0])  #making a record
-
-    #Display the input data as a json:
-    if st.button("Display Data",key = 8)==1:
-        st.write("The data in JSON Format:")
-        st.write(data_display)        
-        st.write("\nThe data in Tabular Format:")
-        st.write(temp)   
  
-    #Display the prediction:
-    if st.button("Predict Credit Score",key = 9)==1:
-        #Order of passing the data into the pipeline:
-        cols=['person_age', 'person_income', 'person_emp_length', 'loan_amnt',
-       'loan_percent_income', 'cb_person_cred_hist_length',
-       'person_home_ownership', 'loan_intent', 'loan_grade',
-       'cb_person_default_on_file']  #List of columns of the original dataframe
-                
-        input_data=[[data["Age"],data["Annual Income"],data["Employment Length"],data["Loan Amount"],
-                     round(data["Loan Percent Income"]/100,2),data["Number of Defaults"],
-                     data["Home Ownership"],data["Loan Intent"],data["Loan Grade"],data["Previous Defaults"]]]
-        
-        pipe=joblib.load('best_pipeline.pkl')  #Loading the pipeline
-        
-        input_data=pd.DataFrame(input_data,columns=cols)  #Converting input into a dataframe with respective columns
+        if person_age >= 21 and person_age <= 35:
+            fico_score += 10
+        elif person_age > 35 and person_age <= 50:
+            fico_score += 5
+        else:
+            fico_score += 0
 
-        res=pipe.predict(input_data)[0]  #Predicting the class
-        out={1:"The Customer is capable of DEFAULTING. Hence it is RISKY to provide loan!", 0:"The Customer is capable of NOT DEFAULTING. Hence it is POSSIBLE to provide loan!"}
-        st.write(f"The Final Verdict obtained from the given model is that : {out[res]}")
-        
+        if person_income >= 10000 and person_income <= 30000:
+            fico_score += 2
+        elif person_income >= 30000 and person_income <= 50000:
+            fico_score += 5
+        elif person_income >= 50000 and person_income <= 70000:
+            fico_score += 8
+        elif person_income > 70000 and person_income <= 100000:
+            fico_score += 10
+        elif person_income > 100000:
+            fico_score += 15
+        else:
+            fico_score += 0
 
-if option==l[0]:
-    page_1()
+    # calculating the lan perscent income from income and amount
+        if person_income > 0:  # Avoid division by zero
+            loan_percent_income = loan_amnt / person_income
+        else:
+            loan_percent_income = 0
 
-if option==l[1]:
-    page_2()
+        #st.write(f"Loan percentage of income: {loan_percent_income}")
 
 
+        if person_home_ownership == 'OWN':
+            fico_score += 10
+        elif person_home_ownership == 'MORTGAGE':
+            fico_score += 5
+        elif person_home_ownership == 'FAMILY':
+            fico_score += 1
+        elif person_home_ownership == 'RENT':
+            fico_score -= 5
 
-    
+        if person_emp_length >= 2 and person_emp_length <= 5:
+            fico_score += 10
+        elif person_emp_length > 5 and person_emp_length <= 10:
+            fico_score += 5
+        else:
+            fico_score += 0
+
+        if loan_intent == 'PERSONAL':
+            fico_score -= 10
+        elif loan_intent == 'ELECTRONICS':
+            fico_score += 5
+        elif loan_intent == 'MEDICAL':
+            fico_score += 5
+        elif loan_intent == 'HEALTHANDBEAUTY':
+            fico_score -= 5
+        elif loan_intent == 'HOMEIMPROVEMENT':
+            fico_score += 5
+        elif loan_intent == 'FURNITURE':
+            fico_score += 5
+
+
+        if loan_grade == 'A':
+            fico_score += 10
+        elif loan_grade == 'B':
+            fico_score += 5
+        elif loan_grade == 'C':
+            fico_score += 0
+        elif loan_grade == 'D':
+            fico_score -= 5
+        else:
+            fico_score -= 10
+
+        if loan_amnt >= 10000 and loan_amnt <= 50000:
+            fico_score += 5
+        elif loan_amnt > 50000 and loan_amnt <= 100000:
+            fico_score += 10
+        else:
+            fico_score += 0
+
+        if loan_int_rate >= 20 and loan_int_rate <= 21:
+            fico_score += 10
+        elif loan_int_rate > 21 and loan_int_rate <= 23:
+            fico_score += 5
+        else:
+            fico_score += 0
+
+        if loan_status == 1:
+            fico_score += 10
+        elif loan_status == 0:
+            fico_score -= 5
+
+        if loan_percent_income >= 0.10 and loan_percent_income <= 0.20:
+            fico_score += 10
+        elif loan_percent_income > 0.20 and loan_percent_income <= 0.30:
+            fico_score += 5
+        else:
+            fico_score += 0
+
+
+    return jsonify({'fico_score': fico_score})
+
+if __name__ == "__main__":
+  app.run(host="0.0.0.0", port=5000)
