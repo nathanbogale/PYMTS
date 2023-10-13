@@ -6,7 +6,8 @@ from sklearn.impute import SimpleImputer
 import pandas as pd
 import numpy as np
 
-app = Flask(__name__)
+#app = Flask(__name__)
+app = Flask("<link>akafay</link>")
 
 @app.route('/predict', methods=['POST'])
 def predict():
