@@ -33,6 +33,14 @@ X_test_imputed = imputer.transform(X_test_scaled)
 clf = HistGradientBoostingClassifier()
 clf.fit(X_train_imputed, y_train)
 
+# Display the logo
+st.image("logo_main.png", width=300)  # Adjust the width as needed
+
+# Display the title and description
+st.title("Akafay Credit Scoring Engine")
+st.subheader("Find out your credit score with our ML FICO scoring engine")
+
+
 # Evaluate the model on the testing data
 y_pred = clf.predict(X_test_imputed)
 conf_mat = confusion_matrix(y_test, y_pred)
@@ -53,13 +61,18 @@ with st.form(key='my_form'):
     loan_grade = st.selectbox("Enter the loan grade", options=['A', 'B', 'C', 'D', 'E'])
    # loan_amnt = st.number_input(label="Enter the loan amount", min_value=0.0, value=0.0, step=0.1)
     loan_int_rate = st.number_input(label="Enter the loan interest rate (Please do not change this value)", min_value=21.0, max_value= 21.0, value=21.0, step=0.1)
-    loan_status = st.selectbox("Enter the loan status", options=['APPROVED', 'REJECTED'])
   #  loan_percent_income = st.number_input(label="Enter the loan percentage of income", min_value=0.0, value=0.0, step=0.1)
     loan_amnt = st.number_input(label="Enter the loan amount", min_value=0.0, value=0.0, step=0.1)
     person_income = st.number_input(label="Enter the person's income", min_value=0.0, value=0.0, step=0.1)
- 
+    loan_status = st.selectbox("Enter the loan status", options=['APPROVED', 'REJECTED'])
+
+
+
     submit_button = st.form_submit_button(label='Submit')
 
+    st.write("Inputs to be included soon:")
+    st.write("From User: Number of open accounts, Employment status.Total monthly debt(from bank), Payment history(from bank), Default history(from bank)")
+    st.write("Collected From Bank: Total monthly debt, Payment history, Default history")
 # Calculate the credit score using the FICO method
 fico_score = 0
 
@@ -89,10 +102,16 @@ if submit_button:
         else:
             fico_score += 0
 
-        if person_income >= 50000 and person_income <= 75000:
-            fico_score += 10
-        elif person_income > 75000 and person_income <= 100000:
+        if person_income >= 10000 and person_income <= 30000:
+            fico_score += 2
+        elif person_income >= 30000 and person_income <= 50000:
             fico_score += 5
+        elif person_income >= 50000 and person_income <= 70000:
+            fico_score += 8
+        elif person_income > 70000 and person_income <= 100000:
+            fico_score += 10
+        elif person_income > 100000:
+            fico_score += 15
         else:
             fico_score += 0
 
@@ -147,9 +166,9 @@ if submit_button:
             fico_score -= 10
 
         if loan_amnt >= 10000 and loan_amnt <= 50000:
-            fico_score += 10
-        elif loan_amnt > 50000 and loan_amnt <= 100000:
             fico_score += 5
+        elif loan_amnt > 50000 and loan_amnt <= 100000:
+            fico_score += 10
         else:
             fico_score += 0
 
@@ -171,5 +190,13 @@ if submit_button:
             fico_score += 5
         else:
             fico_score += 0
-            
+
+
+        def generate_purchase_limit(credit_score):
+          purchase_limit = credit_score * 1000
+          return purchase_limit
+
+        purchase_limit = generate_purchase_limit(fico_score)
+
         st.write(f"Your credit score is {fico_score}.")
+        st.write(f"Your purchase limit is {purchase_limit}.")
