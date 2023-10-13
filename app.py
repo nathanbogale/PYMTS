@@ -39,8 +39,23 @@ def predict():
     clf = HistGradientBoostingClassifier()
     clf.fit(X_train_imputed, y_train)
 
+   
+    # Prepare the input data
+    input_data = pd.DataFrame([data])
+    input_data = pd.get_dummies(input_data, drop_first=True)
+
+       # Ensure the input data has the same columns as the training data
+    missing_cols = set(X.columns) - set(input_data.columns)
+    for c in missing_cols:
+        input_data[c] = 0
+    input_data = input_data[X.columns]
+
+    # Scale and impute the input data
+    input_data_scaled = scaler.transform(input_data)
+    input_data_imputed = imputer.transform(input_data_scaled)
+
     # Predict
-    y_pred = clf.predict(np.array(data['X_test_imputed']).reshape(1, -1))
+    y_pred = clf.predict(input_data_imputed)
 
     # Calculate the credit score using the FICO method
     # ... your FICO score calculation ...
